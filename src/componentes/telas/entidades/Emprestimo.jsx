@@ -5,7 +5,8 @@ import {
   getEmprestimoPorCodigoAPI,
   deleteEmprestimoPorCodigoAPI,
   cadastrarEmprestimoAPI,
-  finalizarEmprestimoAPI
+  finalizarEmprestimoAPI,
+  alterarEmprestimoAPI
 } from '../../../servicos/EmprestimoServico';
 import { getClientesAPI } from '../../../servicos/ClienteServico';
 import { getBibliotecariosAPI } from '../../../servicos/BibliotecarioServico';
