@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   getEmprestimosAPI,
   getEmprestimoPorCodigoAPI,
@@ -18,7 +18,7 @@ import EmprestimoFormulario from "./EmprestimoFormulario";
 
 function Emprestimo() {
     const estadoInicial = {
-        id_emprestimo: 0, // Padronizado para id_emprestimo
+        id_emprestimo: 0, 
         id_cliente: "",
         id_livro: "",
         id_bibliotecario: "",
@@ -38,26 +38,29 @@ function Emprestimo() {
     const [livros, setLivros] = useState([]);
     const [bibliotecarios, setBibliotecarios] = useState([]);
 
-    useEffect(() => {
-        async function carregarDadosIniciais() {
-            try {
-                const [listaClientes, listaLivros, listaBiblio] = await Promise.all([
-                    getClientesAPI(),
-                    getLivrosAPI(),
-                    getBibliotecariosAPI()
-                ]);
-                setClientes(listaClientes);
-                setLivros(listaLivros);
-                setBibliotecarios(listaBiblio);
-                await recuperaEmprestimos();
-            } catch (err) {
-                setAlerta({ status: "error", message: "Erro ao carregar dados auxiliares." });
-            } finally {
-                setCarregando(false);
-            }
+    const carregarDadosIniciais = useCallback(async () => {
+        setCarregando(true);
+        try {
+            const [listaClientes, listaLivros, listaBiblio, listaEmprestimos] = await Promise.all([
+                getClientesAPI(),
+                getLivrosAPI(),
+                getBibliotecariosAPI(),
+                getEmprestimosAPI()
+            ]);
+            setClientes(listaClientes);
+            setLivros(listaLivros);
+            setBibliotecarios(listaBiblio);
+            setListaObjetos(listaEmprestimos);
+        } catch (err) {
+            setAlerta({ status: "error", message: "Erro ao carregar dados auxiliares." });
+        } finally {
+            setCarregando(false);
         }
-        carregarDadosIniciais();
     }, []);
+
+    useEffect(() => {
+        carregarDadosIniciais();
+    }, [carregarDadosIniciais]);
 
     const recuperaEmprestimos = async () => {
         try {
@@ -84,7 +87,7 @@ function Emprestimo() {
         try {
             const respostaAPI = await finalizarEmprestimoAPI(id);
             setAlerta({ status: respostaAPI.status, message: respostaAPI.message });
-            await carregarDadosIniciais(); // Recarrega para atualizar multas e status
+            await carregarDadosIniciais(); 
         } catch (err) {
             setAlerta({ status: "error", message: "Erro ao finalizar: " + (err.message || err) });
         }
@@ -112,7 +115,6 @@ function Emprestimo() {
     const acaoCadastrar = async (e) => {
         e.preventDefault();
 
-        // Conversão de tipos para garantir integridade no banco
         const objetoParaEnvio = {
             ...objeto,
             id_cliente: Number(objeto.id_cliente),
