@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-
 import {
   getEmprestimosAPI,
   getEmprestimoPorCodigoAPI,
@@ -19,13 +18,13 @@ import EmprestimoFormulario from "./EmprestimoFormulario";
 
 function Emprestimo() {
     const estadoInicial = {
-        id_agendamento: 0,
-        id_cliente: 0,
-        id_livro: 0,
-        id_bibliotecario: 0,
+        id_emprestimo: 0, // Padronizado para id_emprestimo
+        id_cliente: "",
+        id_livro: "",
+        id_bibliotecario: "",
         status: "ATIVO",
-        data_inicio: null,
-        data_fim: null,
+        data_inicio: "",
+        data_fim: "",
         data_devolucao: null
     };
 
@@ -40,59 +39,58 @@ function Emprestimo() {
     const [bibliotecarios, setBibliotecarios] = useState([]);
 
     useEffect(() => {
-        async function carregarDadosIniciais() {
-            try {
-                const [listaClientes, listaLivros, listaBiblio] = await Promise.all([
-                    getClientesAPI(),
-                    getLivrosAPI(),
-                    getBibliotecariosAPI()
-                ]);
-                setClientes(listaClientes);
-                setLivros(listaLivros);
-                setBibliotecarios(listaBiblio);
-                await recuperaEmprestimos();
-            } catch (err) {
-                setAlerta({ status: "error", message: "Erro ao carregar dados auxiliares." });
-            } finally {
-                setCarregando(false);
-            }
-        }
         carregarDadosIniciais();
     }, []);
 
-    const recuperaEmprestimos = async () => {
+    const carregarDadosIniciais = async () => {
         setCarregando(true);
         try {
-            const dados = await getEmprestimosAPI();
-            setListaObjetos(dados);
+            const [listaClientes, listaLivros, listaBiblio] = await Promise.all([
+                getClientesAPI(),
+                getLivrosAPI(),
+                getBibliotecariosAPI()
+            ]);
+            setClientes(listaClientes);
+            setLivros(listaLivros);
+            setBibliotecarios(listaBiblio);
+            await recuperaEmprestimos();
         } catch (err) {
-            setAlerta({ status: "error", message: err.message });
+            setAlerta({ status: "error", message: "Erro ao carregar dados auxiliares." });
         } finally {
             setCarregando(false);
         }
     };
 
-    const remover = async (id_agendamento) => {
+    const recuperaEmprestimos = async () => {
+        try {
+            const dados = await getEmprestimosAPI();
+            setListaObjetos(dados);
+        } catch (err) {
+            setAlerta({ status: "error", message: err.message || err });
+        }
+    };
+
+    const remover = async (id) => {
         if (window.confirm('Deseja remover este empréstimo?')) {
             try {
-                const respostaAPI = await deleteEmprestimoPorCodigoAPI(id_agendamento);
+                const respostaAPI = await deleteEmprestimoPorCodigoAPI(id);
                 setAlerta({ status: "success", message: respostaAPI.message });
                 await recuperaEmprestimos();
             } catch (err) {
-                setAlerta({ status: "error", message: err.message });
+                setAlerta({ status: "error", message: err.message || err });
             }
         }
     };
 
     const finalizar = async (id) => {
-    try {
-        const respostaAPI = await finalizarEmprestimoAPI(id);
-        setAlerta({ status: respostaAPI.status, message: respostaAPI.message });
-        recuperaEmprestimos();
-    } catch (err) {
-        setAlerta({ status: "error", message: "Erro ao finalizar: " + err });
-    }
-};
+        try {
+            const respostaAPI = await finalizarEmprestimoAPI(id);
+            setAlerta({ status: respostaAPI.status, message: respostaAPI.message });
+            await carregarDadosIniciais(); // Recarrega para atualizar multas e status
+        } catch (err) {
+            setAlerta({ status: "error", message: "Erro ao finalizar: " + (err.message || err) });
+        }
+    };
 
     const novoObjeto = () => {
         setEditar(false);
@@ -101,9 +99,9 @@ function Emprestimo() {
         setExibirForm(true);
     };
 
-    const editarObjeto = async (id_agendamento) => {
+    const editarObjeto = async (id) => {
         try {
-            const dados = await getEmprestimoPorCodigoAPI(id_agendamento);
+            const dados = await getEmprestimoPorCodigoAPI(id);
             setObjeto(dados);
             setEditar(true);
             setAlerta({ status: "", message: "" });
@@ -116,6 +114,7 @@ function Emprestimo() {
     const acaoCadastrar = async (e) => {
         e.preventDefault();
 
+        // Conversão de tipos para garantir integridade no banco
         const objetoParaEnvio = {
             ...objeto,
             id_cliente: Number(objeto.id_cliente),
@@ -127,29 +126,20 @@ function Emprestimo() {
             let respostaAPI;
             
             if (editar) {
-                // Chama a função PUT
                 respostaAPI = await alterarEmprestimoAPI(objetoParaEnvio);
             } else {
-                // Chama a função POST
                 respostaAPI = await cadastrarEmprestimoAPI(objetoParaEnvio);
             }
 
-            if (retorno.status === "success") {
+            setAlerta({ status: respostaAPI.status, message: respostaAPI.message });
+
+            if (respostaAPI.status === "success") {
                 setExibirForm(false);
                 await recuperaEmprestimos();
-            setAlerta({ status: respostaAPI.status, message: respostaAPI.message });
-            
-            // Se a operação foi bem sucedida
-            if (respostaAPI.status === "success") {
-                setObjeto(respostaAPI.objetoParaEnvio);
-                setExibirForm(false); // Fecha o modal/formulário ao ter sucesso
-                recuperaEmprestimos(); // Atualiza a lista
             }
             
         } catch (err) {
-            setAlerta({ status: "error", message: "Erro ao processar: " + err });
-            setAlerta({ status: "error", message: "Erro ao processar a requisição!" });
-            console.error(err.message);
+            setAlerta({ status: "error", message: "Erro ao processar: " + (err.message || err) });
         }
     };
 
@@ -160,20 +150,9 @@ function Emprestimo() {
 
     return (
         <EmprestimoContext.Provider value={{
-                exibirForm,
-                alerta,
-                listaObjetos,
-                remover,
-                objeto,
-                editarObjeto,
-                acaoCadastrar,
-                handleChange,
-                novoObjeto,
-                setExibirForm,
-                clientes,
-                livros,
-                bibliotecarios,
-                finalizar
+                exibirForm, alerta, listaObjetos, remover, objeto,
+                editarObjeto, acaoCadastrar, handleChange, novoObjeto,
+                setExibirForm, clientes, livros, bibliotecarios, finalizar
         }}>
             <Carregando carregando={carregando}>
                 <EmprestimoTabela />
