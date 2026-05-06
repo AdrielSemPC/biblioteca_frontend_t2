@@ -39,27 +39,25 @@ function Emprestimo() {
     const [bibliotecarios, setBibliotecarios] = useState([]);
 
     useEffect(() => {
+        async function carregarDadosIniciais() {
+            try {
+                const [listaClientes, listaLivros, listaBiblio] = await Promise.all([
+                    getClientesAPI(),
+                    getLivrosAPI(),
+                    getBibliotecariosAPI()
+                ]);
+                setClientes(listaClientes);
+                setLivros(listaLivros);
+                setBibliotecarios(listaBiblio);
+                await recuperaEmprestimos();
+            } catch (err) {
+                setAlerta({ status: "error", message: "Erro ao carregar dados auxiliares." });
+            } finally {
+                setCarregando(false);
+            }
+        }
         carregarDadosIniciais();
     }, []);
-
-    const carregarDadosIniciais = async () => {
-        setCarregando(true);
-        try {
-            const [listaClientes, listaLivros, listaBiblio] = await Promise.all([
-                getClientesAPI(),
-                getLivrosAPI(),
-                getBibliotecariosAPI()
-            ]);
-            setClientes(listaClientes);
-            setLivros(listaLivros);
-            setBibliotecarios(listaBiblio);
-            await recuperaEmprestimos();
-        } catch (err) {
-            setAlerta({ status: "error", message: "Erro ao carregar dados auxiliares." });
-        } finally {
-            setCarregando(false);
-        }
-    };
 
     const recuperaEmprestimos = async () => {
         try {
