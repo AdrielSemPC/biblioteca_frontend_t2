@@ -12,6 +12,8 @@ import LivroContext from "./LivroContext";
 import LivroTabela from "./LivroTabela";
 import LivroFormulario from "./LivroFormulario";
 
+import WithAuth from "../../../seguranca/WithAuth";
+
 function Livro() {
     const estadoInicial = {
         id_livro: "",
@@ -105,4 +107,4 @@ function Livro() {
     );
 }
 
-export default Livro;
+export default WithAuth(Livro);

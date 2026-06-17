@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   getEmprestimosAPI,
   getEmprestimoPorCodigoAPI,
@@ -15,6 +15,8 @@ import Carregando from "../../reutilizaveis/Carregando";
 import EmprestimoContext from "./EmprestimoContext";
 import EmprestimoTabela from "./EmprestimoTabela";
 import EmprestimoFormulario from "./EmprestimoFormulario";
+
+import WithAuth from "../../../seguranca/WithAuth";
 
 function Emprestimo() {
     const estadoInicial = {
@@ -38,7 +40,7 @@ function Emprestimo() {
     const [livros, setLivros] = useState([]);
     const [bibliotecarios, setBibliotecarios] = useState([]);
 
-    const carregarDadosIniciais = useCallback(async () => {
+    const carregarDadosIniciais = async () => {
         setCarregando(true);
         try {
             const [listaClientes, listaLivros, listaBiblio, listaEmprestimos] = await Promise.all([
@@ -47,20 +49,25 @@ function Emprestimo() {
                 getBibliotecariosAPI(),
                 getEmprestimosAPI()
             ]);
+
             setClientes(listaClientes);
             setLivros(listaLivros);
             setBibliotecarios(listaBiblio);
             setListaObjetos(listaEmprestimos);
+
         } catch (err) {
-            setAlerta({ status: "error", message: "Erro ao carregar dados auxiliares." });
+            setAlerta({
+                status: "error",
+                message: "Erro ao carregar dados auxiliares."
+            });
         } finally {
             setCarregando(false);
         }
-    }, []);
+    };
 
     useEffect(() => {
         carregarDadosIniciais();
-    }, [carregarDadosIniciais]);
+    }, []);
 
     const recuperaEmprestimos = async () => {
         try {
@@ -162,4 +169,4 @@ function Emprestimo() {
     );
 }
 
-export default Emprestimo;
+export default WithAuth(Emprestimo);

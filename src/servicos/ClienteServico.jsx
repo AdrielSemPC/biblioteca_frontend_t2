@@ -1,8 +1,10 @@
+import { getToken } from '../seguranca/Autenticacao';
+
 export const getClientesAPI = async () => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/clientes`,
         {
             method:"GET",
-            headers:{"Content-Type": "application/json"}
+            headers:{"Content-Type": "application/json", "authorization": getToken()}
         }
     )
     const d = await r.json();
@@ -13,7 +15,7 @@ export const getClientePorCodigoAPI = async codigo => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/clientes/${codigo}`,
         {
             method:"GET",
-            headers:{"Content-Type": "application/json"}
+            headers:{"Content-Type": "application/json", "authorization": getToken()}
         }
     )
     const d = await r.json();
@@ -24,7 +26,7 @@ export const deleteClientePorCodigoAPI = async codigo => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/clientes/${codigo}`,
         {
             method:"DELETE",
-            headers:{"Content-Type": "application/json"}
+            headers:{"Content-Type": "application/json", "authorization": getToken()}
         }
     )
     const d = await r.json();
@@ -35,7 +37,7 @@ export const cadastrarClienteAPI = async (objeto) => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/clientes/`,
         {
             method: "POST",
-            headers:{"Content-Type": "application/json"},
+            headers:{"Content-Type": "application/json", "authorization": getToken()},
             body: JSON.stringify(objeto)
         }
     )
@@ -47,7 +49,7 @@ export const alterarClienteAPI = async (objeto) => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/clientes/${objeto.id_cliente}`,
         {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "authorization": getToken() },
             body: JSON.stringify(objeto)
         }
     )

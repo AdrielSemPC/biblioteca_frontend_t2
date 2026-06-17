@@ -1,8 +1,10 @@
+import { getToken } from '../seguranca/Autenticacao';
+
 export const getEmprestimosAPI = async () => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/emprestimos`,
         {
             method: "GET",
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json", "authorization": getToken() }
         }
     )
     const d = await r.json();
@@ -13,7 +15,7 @@ export const getEmprestimoPorCodigoAPI = async codigo => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/emprestimos/${codigo}`,
         {
             method: "GET",
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json", "authorization": getToken() }
         }
     )
     const d = await r.json();
@@ -24,7 +26,7 @@ export const deleteEmprestimoPorCodigoAPI = async codigo => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/emprestimos/${codigo}`,
         {
             method: "DELETE",
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json", "authorization": getToken() }
         }
     )
     const d = await r.json();
@@ -35,7 +37,7 @@ export const cadastrarEmprestimoAPI = async (objeto) => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/emprestimos`,
         {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "authorization": getToken() },
             body: JSON.stringify(objeto)
         }
     )
@@ -47,7 +49,7 @@ export const alterarEmprestimoAPI = async (objeto) => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/emprestimos/${objeto.id_emprestimo}`,
         {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "authorization": getToken() },
             body: JSON.stringify(objeto)
         }
     )
@@ -58,7 +60,7 @@ export const alterarEmprestimoAPI = async (objeto) => {
 export const finalizarEmprestimoAPI = async (id, multa = 0) => {
     const r = await fetch(`${process.env.REACT_APP_ENDERECO_API}/emprestimos/${id}/finalizar`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "authorization": getToken() },
         body: JSON.stringify({ 
             id_emprestimo: id,
             valor_multa: multa 

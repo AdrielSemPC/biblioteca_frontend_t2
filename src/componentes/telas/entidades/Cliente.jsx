@@ -12,6 +12,8 @@ import ClienteContext from "./ClienteContext";
 import ClienteTabela from "./ClienteTabela";
 import ClienteFormulario from "./ClienteFormulario";
 
+import WithAuth from "../../../seguranca/WithAuth";
+
 function Cliente() {
     const estadoInicial = {
         id_cliente: "",
@@ -105,4 +107,4 @@ function Cliente() {
     );
 }
 
-export default Cliente;
+export default WithAuth(Cliente);

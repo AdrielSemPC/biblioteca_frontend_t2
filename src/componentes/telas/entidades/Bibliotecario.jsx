@@ -4,13 +4,15 @@ import {
   getBibliotecarioPorCodigoAPI,
   deleteBibliotecarioPorCodigoAPI,
   cadastrarBibliotecarioAPI,
-  alterarBibliotecarioAPI // Importação adicionada
+  alterarBibliotecarioAPI
 } from '../../../servicos/BibliotecarioServico';
 
 import Carregando from "../../reutilizaveis/Carregando";
 import BibliotecarioContext from "./BibliotecarioContext";
 import BibliotecarioTabela from "./BibliotecarioTabela";
 import BibliotecarioFormulario from "./BibliotecarioFormulario";
+
+import WithAuth from "../../../seguranca/WithAuth";
 
 function Bibliotecario() {
     const estadoInicial = {
@@ -120,4 +122,4 @@ function Bibliotecario() {
     );
 }
 
-export default Bibliotecario;
+export default WithAuth(Bibliotecario);

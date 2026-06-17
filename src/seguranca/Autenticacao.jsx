@@ -1,0 +1,73 @@
+import { jwtDecode } from "jwt-decode";
+
+const NOMEAPP = 'biblioteca_pwa';
+
+export const getToken = () => {
+    const localStorageAutenticacao = localStorage.getItem(NOMEAPP + '/autenticacao');
+    const autenticacao = localStorageAutenticacao ?
+    JSON.parse(localStorageAutenticacao) : null;
+    if (autenticacao === null){
+        return null;
+    }
+    if (autenticacao.auth === false) {
+        return null;
+    } else {
+        let decoded = jwtDecode(autenticacao.token);
+        if (decoded.exp <= Math.floor(new Date() / 1000)){
+            console.log('Token expirado');
+            logout();
+           throw new Error('Token expirado');
+        } else {
+            return autenticacao.token;
+        }
+    }
+}
+
+export const getUsuario = () => {
+    const localStorageAutenticacao = localStorage.getItem(NOMEAPP + '/autenticacao');
+    const autenticacao = localStorageAutenticacao ?
+    JSON.parse(localStorageAutenticacao) : null;
+    if (autenticacao === null){
+        return null;
+    }
+    if (autenticacao.auth === false) {
+        return null;
+    } else {
+        let decoded = jwtDecode(autenticacao.token);
+        if (decoded.exp <= Math.floor(new Date() / 1000)){
+            console.log('Token expirado');
+            logout();
+            throw new Error('Token expirado');
+        } else {
+            return decoded.usuario;
+        }
+    }
+}
+
+export const gravaAutenticacao = (json) => {
+    localStorage.setItem(NOMEAPP+'/autenticacao',JSON.stringify(json));
+}
+
+export const logout = () => {
+    localStorage.setItem(NOMEAPP+'/autenticacao',JSON.stringify({
+        "auth" : false , "token" : ''
+    }));
+}
+
+export const getTipo = () => {
+    try {
+        const usuario = getUsuario();
+        return usuario?.tipo || null;
+    } catch (err) {
+        return null;
+    }
+}
+
+export const isAdmin = () => {
+    return getTipo() === 'A';
+}
+
+export const isUsuario = () => {
+    const tipo = getTipo();
+    return tipo === 'U' || tipo === 'A';
+}
